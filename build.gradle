@@ -1,0 +1,82 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'maven-publish'
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://api.modrinth.com/maven' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    // Carpet 26.2, used for EntityPlayerMPFake.
+    implementation "maven.modrinth:TQTTVgYE:bGrLxJ8v"
+
+    // Real permission checks. Included inside this mod's jar.
+    include(implementation("me.lucko:fabric-permissions-api:0.7.0"))
+
+    // LuckPerms itself is supplied by the server; compile against its public API.
+    compileOnly "net.luckperms:api:5.5"
+}
+
+processResources {
+    def version = project.version
+    inputs.property "version", version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+sourceSets {
+    registryTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+tasks.register('registryTest', JavaExec) {
+    dependsOn tasks.named('registryTestClasses')
+    classpath = sourceSets.registryTest.runtimeClasspath
+    mainClass = 'zeus2.botspawn.BotRegistryTest'
+}
+tasks.register('ownerStoreTest', JavaExec) {
+    dependsOn tasks.named('registryTestClasses')
+    classpath = sourceSets.registryTest.runtimeClasspath
+    mainClass = 'zeus2.botspawn.BotOwnerStoreTest'
+}
+tasks.named('check') {
+    dependsOn tasks.named('registryTest')
+    dependsOn tasks.named('ownerStoreTest')
+}
+
+jar {
+    def projectName = project.name
+    inputs.property "projectName", projectName
+
+    from("LICENSE") {
+        rename { "${it}_${projectName}" }
+    }
+}
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            from components.java
+        }
+    }
+}

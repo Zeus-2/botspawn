@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "botspawn",
+  "version": "${version}",
+  "name": "Botspawn",
+  "description": "Permission-controlled Carpet fake-player spawning for donators and staff.",
+  "authors": [
+    "Zeus2"
+  ],
+  "license": "CC0-1.0",
+  "icon": "assets/botspawn/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "zeus2.botspawn.Botspawn"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": ">=26.2",
+    "java": ">=25",
+    "fabric-api": "*",
+    "carpet": "*",
+    "fabric-permissions-api-v0": "*"
+  },
+  "suggests": {
+    "luckperms": "*"
+  }
+}
